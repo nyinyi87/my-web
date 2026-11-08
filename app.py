@@ -18,6 +18,8 @@ if uploaded_video is not None:
     st.video(uploaded_video)
     
     if st.button("🚀 မြန်မာဘာသာသို့ ပြောင်းလဲပြီး Dubbing လုပ်မည်"):
+        output_path = "output_dubbed_video.mp4"
+        
         with st.status("လုပ်ငန်းစဉ်များ လုပ်ဆောင်နေပါပြီ...", expanded=True) as status:
             
             # ၁။ ဗီဒီယိုဖိုင်ကို သိမ်းဆည်းခြင်း
@@ -52,27 +54,42 @@ if uploaded_video is not None:
             myanmar_audio = AudioFileClip(voice_path)
             
             if music_path:
-                bg_music = AudioFileClip(music_path).volumex(0.2) # နောက်ခံအသံကို အနည်းငယ်နှိမ်ထားရန်
+                bg_music = AudioFileClip(music_path).volumex(0.2)
                 final_audio = CompositeAudioClip([myanmar_audio, bg_music])
             else:
                 final_audio = myanmar_audio
                 
-            # ဗီဒီယို အရှည်အတိုင်း အသံကို ချိန်ညှိခြင်း
+            # အသံအရှည်ကို ဗီဒီယိုအရှည်အတိုင်း သတ်မှတ်ခြင်း
             final_audio.duration = video_clip.duration
             final_video = video_clip.set_audio(final_audio)
             
-            output_path = "output_dubbed_video.mp4"
-            final_video.write_videofile(output_path, fps=24, codec="libx264", audio_codec="aac")
+            # ဗီဒီယိုဖိုင်အသစ် ထုတ်လုပ်ခြင်း
+            st.write("⚙️ ဗီဒီယိုအသစ်ကို Encoder လုပ်နေပါပြီ၊ ခဏစောင့်ပါ...")
+            final_video.write_videofile(
+                output_path, 
+                fps=24, 
+                codec="libx264", 
+                audio_codec="aac",
+                preset="ultrafast", # မြန်ဆန်စေရန်
+                logger=None
+            )
+            
+            # Clip များကို ပိတ်သိမ်းခြင်း (Memory ရှင်းရန်)
+            video_clip.close()
+            final_video.close()
             
             status.update(label="✅ အောင်မြင်စွာ ပြီးဆုံးပါပြီ!", state="complete", expanded=False)
             
         st.success("🎉 သင့်ရဲ့ မြန်မာ Dubbing ဗီဒီယို အဆင်သင့်ဖြစ်ပါပြီ။")
         
         # ဒေါင်းလုပ်ဆွဲရန် ခလုတ်ပြသခြင်း
-        with open(output_path, "rb") as file:
-            st.download_button(
-                label="📥 ဗီဒီယိုဖိုင်ကို ဒေါင်းလုပ်ဆွဲရန်",
-                data=file,
-                file_name="Myanmar_Dubbed_Video.mp4",
-                mime="video/mp4"
-            )
+        if os.path.exists(output_path):
+            with open(output_path, "rb") as file:
+                st.download_button(
+                    label="📥 ဗီဒီယိုဖိုင်ကို ဒေါင်းလုပ်ဆွဲရန်",
+                    data=file,
+                    file_name="Myanmar_Dubbed_Video.mp4",
+                    mime="video/mp4"
+                )
+        else:
+            st.error("❌ ဗီဒီယိုဖိုင် ထုတ်လုပ်ရာတွင် အမှားအယွင်းရှိခဲ့ပါသည်။")
