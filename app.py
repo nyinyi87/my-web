@@ -1,6 +1,7 @@
 import os
 import streamlit as st
-import moviepy.editor as mp
+import moviepy as mp
+import moviepy.video.io.VideoFileClip as VideoFileClip
 from gtts import gTTS
 
 # Web App ၏ ပုံစံနှင့် ခေါင်းစဉ်
