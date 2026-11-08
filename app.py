@@ -1,7 +1,6 @@
 import os
 import streamlit as st
-import moviepy as mp
-import moviepy.video.io.VideoFileClip as VideoFileClip
+from moviepy.editor import VideoFileClip, AudioFileClip, CompositeAudioClip
 from gtts import gTTS
 
 # Web App ၏ ပုံစံနှင့် ခေါင်းစဉ်
@@ -37,7 +36,7 @@ if uploaded_video is not None:
             
             # ၃။ အသံထုတ်ယူခြင်းနှင့် ဘာသာပြန်ခြင်း
             st.write("🔄 ဗီဒီယိုမှ အသံထုတ်ယူခြင်းနှင့် မြန်မာဘာသာသို့ ဘာသာပြန်ဆိုနေပါပြီ...")
-            video_clip = mp.VideoFileClip(video_path)
+            video_clip = VideoFileClip(video_path)
             
             # မူရင်းဗီဒီယိုထဲက အသံကို ဖြုတ်ထုတ်ပြီး မြန်မာအသံနဲ့ အစားထိုးရန်
             translated_text = "မင်္ဂလာပါ၊ ဤသည်မှာ ဗီဒီယိုအတွက် မြန်မာဘာသာပြန်ဆိုထားသော အသံဖိုင် ဖြစ်ပါသည်။"
@@ -50,16 +49,16 @@ if uploaded_video is not None:
             
             # ၅။ ဗီဒီယိုနှင့် အသံကို ပေါင်းစပ်ခြင်း
             st.write("🎬 ဗီဒီယိုနှင့် အသံတို့ကို အံဝင်ခွင်ကျ ပေါင်းစပ်နေပါပြီ...")
-            myanmar_audio = mp.AudioFileClip(voice_path)
+            myanmar_audio = AudioFileClip(voice_path)
             
             if music_path:
-                bg_music = mp.AudioFileClip(music_path).volumex(0.2) # နောက်ခံအသံကို အနည်းငယ်နှိမ်ထားရန်
-                final_audio = mp.CompositeAudioClip([myanmar_audio, bg_music])
+                bg_music = AudioFileClip(music_path).volumex(0.2) # နောက်ခံအသံကို အနည်းငယ်နှိမ်ထားရန်
+                final_audio = CompositeAudioClip([myanmar_audio, bg_music])
             else:
                 final_audio = myanmar_audio
                 
-            # ဗီဒီယို အရှည်အတိုင်း အသံကို ချိန်ညှိခြင်း (Duration သတ်မှတ်ပုံအသစ်)
-            final_audio = final_audio.subclip(0, video_clip.duration)
+            # ဗီဒီယို အရှည်အတိုင်း အသံကို ချိန်ညှိခြင်း
+            final_audio.duration = video_clip.duration
             final_video = video_clip.set_audio(final_audio)
             
             output_path = "output_dubbed_video.mp4"
